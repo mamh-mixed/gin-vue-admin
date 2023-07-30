@@ -8,17 +8,17 @@
           <el-row :gutter="20">
             <el-col :span="8" :xs="24" :sm="8">
               <div class="flex-center">
-                <i class="el-icon-sort icon" />今日流量 (1231231)
+                <i class="el-icon-sort icon" />今日流量 (xxx)
               </div>
             </el-col>
             <el-col :span="8" :xs="24" :sm="8">
               <div class="flex-center">
-                <i class="el-icon-s-custom icon" />总用户数 (24001)
+                <i class="el-icon-s-custom icon" />总用户数 (xxx)
               </div>
             </el-col>
             <el-col :span="8" :xs="24" :sm="8">
               <div class="flex-center">
-                <i class="el-icon-s-comment icon" />好评率 (99%)
+                <i class="el-icon-s-comment icon" />好评率 (xx%)
               </div>
             </el-col>
           </el-row>
