@@ -90,9 +90,9 @@
                 placement="top"
               >
                 <el-card>
-                  <h3>{{ item.name }}({{ item.email }})</h3>
-                  <hr/>
                   <h3>commit: {{ item.sha }}</h3>
+                  <h3>Author: {{ item.name }}({{ item.email }})</h3>
+                  <el-divider></el-divider>
                   <pre>{{ item.message }}</pre>
                 </el-card>
               </el-timeline-item>
@@ -140,6 +140,7 @@ export default {
             const daytime = moment(element.commit.author.date).format('YYYY-MM-DD HH:mm:ss')
             this.dataTimeline.push({
               sha: element.sha,
+              htmlURL: element.html_url,
               date: daytime,
               name: element.commit.author.name,
               email: element.commit.author.email,
