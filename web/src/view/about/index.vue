@@ -86,12 +86,14 @@
               <el-timeline-item
                 v-for="(item,index) in dataTimeline"
                 :key="index"
-                timestamp="2018/4/12"
+                :timestamp="item.date"
                 placement="top"
               >
                 <el-card>
-                  <h4>{{ item.title }}</h4>
-                  <p>{{ item.message }}</p>
+                  <h3>{{ item.name }}({{ item.email }})</h3>
+                  <hr/>
+                  <h3>commit: {{ item.sha }}</h3>
+                  <pre>{{ item.message }}</pre>
                 </el-card>
               </el-timeline-item>
             </el-timeline>
@@ -109,6 +111,9 @@
 
 <script>
 import { Commits, Members } from '@/api/github'
+
+import moment from 'moment'
+
 export default {
   name: 'About',
   data() {
@@ -132,10 +137,12 @@ export default {
       Commits(this.page).then(({ data }) => {
         data.forEach((element) => {
           if (element.commit.message) {
+            const daytime = moment(element.commit.author.date).format('YYYY-MM-DD HH:mm:ss')
             this.dataTimeline.push({
-              from: new Date(element.commit.author.date),
-              title: element.commit.author.name,
-              showDayAndMonth: true,
+              sha: element.sha,
+              date: daytime,
+              name: element.commit.author.name,
+              email: element.commit.author.email,
               message: element.commit.message,
             })
           }
