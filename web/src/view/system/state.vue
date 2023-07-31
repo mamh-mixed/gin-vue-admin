@@ -113,7 +113,7 @@
                 </el-row>
                 <el-row :gutter="10">
                   <el-col :span="12">total (GB)</el-col>
-                  <el-col :span="12" v-text="state.ram.totalMb / 1024" />
+                  <el-col :span="12" v-text="(state.ram.totalMb / 1024).toFixed(2)" />
                 </el-row>
                 <el-row :gutter="10">
                   <el-col :span="12">used (GB)</el-col>
@@ -157,7 +157,7 @@ export default {
     this.reload()
     this.timer = setInterval(() => {
       this.reload()
-    }, 1000 * 10)
+    }, 1000 * 30)
   },
   beforeDestroy() {
     clearInterval(this.timer)
