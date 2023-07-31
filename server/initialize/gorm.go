@@ -112,7 +112,7 @@ func gormConfig() *gorm.Config {
 	case "info", "Info":
 		config.Logger = internal.Default.LogMode(logger.Info)
 	default:
-		config.Logger = internal.Default.LogMode(logger.Info)
+		config.Logger = internal.Default.LogMode(logger.Error)
 	}
 	return config
 }
