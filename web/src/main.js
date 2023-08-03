@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import 'element-plus/dist/index.css'
+import 'font-awesome/css/font-awesome.min.css'
 import ElementPlus from 'element-plus'
 import zhCn from 'element-plus/es/locale/lang/zh-cn'
 // 引入gin-vue-admin前端初始化相关内容
