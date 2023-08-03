@@ -16,7 +16,7 @@
 </template>
 
 <script>
-import { getDockerVersion } from "@/api/docker";
+import { getInfo, getVersion } from "@/api/docker";
 
 export default {
   name: 'Docker',
@@ -30,8 +30,10 @@ export default {
 
   methods: {
     async version() {
-      const d = await getDockerVersion()
-      console.log(d)
+      const d1 = await getInfo()
+      console.log(d1)
+      const d2 = await getVersion()
+      console.log(d2)
     },
   }
 }
