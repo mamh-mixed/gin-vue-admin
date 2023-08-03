@@ -1,9 +1,16 @@
 import service from '@/utils/request'
 
 
-export const getDockerVersion = () => {
+export const getVersion = () => {
   return service({
     url: '/docker/getVersion',
     method: 'get'
   })
+}
+
+export const getInfo = () => {
+    return service({
+        url: '/docker/getInfo',
+        method: 'get'
+    })
 }
