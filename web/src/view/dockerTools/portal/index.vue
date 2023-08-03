@@ -15,25 +15,7 @@
                     inactive-color="#ff4949">
                 </el-switch>
               </template>
-
-              <el-row>
-                <el-col :span="12">
-                  <DetailInfo title="节点名称" content="mamh-left" tag-type="success"/>
-                </el-col>
-                <el-col :span="12">
-                  <DetailInfo title="操作系统" content="Ubuntu 18.04.6" footer="5.4.0-150-generic" tag-type="info"/>
-                </el-col>
-              </el-row>
-
-              <el-row>
-                <el-col :span="12">
-                  <DetailInfo title="Docker版本" content="24.0.2" footer="Docker Engine - Community" tag-type="warning"/>
-                </el-col>
-                <el-col :span="12">
-                  <DetailInfo title="Build版本" content="go1.20.4" footer="ApiVersion: 1.43 " tag-type="danger"/>
-                </el-col>
-              </el-row>
-
+              <DetailInfo/>
             </el-card>
           </el-col>
           <el-col :span="12">
