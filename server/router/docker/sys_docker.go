@@ -11,7 +11,7 @@ type DockerRouter struct {
 
 func (s *DockerRouter) InitDockerRouter(Router *gin.RouterGroup) {
 	dockerRouter := Router.Group("docker").Use(middleware.OperationRecord())
-	var dockerApi = v1.ApiGroupApp.SystemApiGroup.DockerApi
+	var dockerApi = v1.ApiGroupApp.DcokerApiGroup.DockerApi
 	{
 		dockerRouter.GET("getVersion", dockerApi.GetDockerVersion)
 		dockerRouter.GET("getInfo", dockerApi.GetDockerInfo)
