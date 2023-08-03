@@ -37,32 +37,38 @@
             </el-card>
           </el-col>
           <el-col :span="12">
-            <el-card class="card_item">
+            <el-card>
               <template #header>
                 <h1>快捷入口</h1>
               </template>
 
               <el-row>
                 <el-col :span="6">
-                  <QuickEntry title="镜像管理"/>
+                  <QuickEntry title="镜像管理" className="fa-window-maximize"/>
                 </el-col>
-                <el-col :span="6">容器管理
+                <el-col :span="6">
+                  <QuickEntry title="容器管理" className="fa-gears"/>
                 </el-col>
-                <el-col :span="6">数据卷管理
+                <el-col :span="6">
+                  <QuickEntry title="数据卷管理" className="fa-file-text"/>
                 </el-col>
-                <el-col :span="6">仓库管理
+                <el-col :span="6">
+                  <QuickEntry title="仓库管理" className="fa-dot-circle-o"/>
                 </el-col>
               </el-row>
 
               <el-row>
                 <el-col :span="6">
-                  集群信息
+                  <QuickEntry title="集群信息" class-name="fa-calendar"/>
                 </el-col>
-                <el-col :span="6">服务管理
+                <el-col :span="6">
+                  <QuickEntry title="服务管理" class-name="fa-hourglass-end"/>
                 </el-col>
-                <el-col :span="6">配置管理
+                <el-col :span="6">
+                  <QuickEntry title="配置管理" class-name="fa-search"/>
                 </el-col>
-                <el-col :span="6">网络信息
+                <el-col :span="6">
+                  <QuickEntry title="网络信息" class-name="fa-usb"/>
                 </el-col>
               </el-row>
 
