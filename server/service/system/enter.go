@@ -15,4 +15,5 @@ type ServiceGroup struct {
 	OperationRecordService
 	SystemConfigService
 	UserService
+	DockerService
 }
