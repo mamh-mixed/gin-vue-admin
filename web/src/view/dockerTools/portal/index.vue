@@ -54,7 +54,9 @@
         <el-row :gutter="15" class="docker_portal">
           <el-col :span="24">
             <el-card class="right_item">
-
+              <template #header>
+                <h1>概览</h1>
+              </template>
               <el-table
                   :data="tableData"
                   height="600"
