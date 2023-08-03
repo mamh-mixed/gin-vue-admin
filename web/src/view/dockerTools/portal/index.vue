@@ -98,14 +98,18 @@ export default {
     QuickEntry
   },
 
-
   data() {
     return {}
   },
-  created() {
-
+  mounted() {
+    this.reload()
   },
-  methods: {}
+  methods: {
+    reload() {
+      this.$store.dispatch('docker/getInfo')
+      this.$store.dispatch('docker/getVersion')
+    },
+  }
 }
 </script>
 
@@ -122,7 +126,6 @@ export default {
   height: 600px;
 
 }
-
 
 
 </style>
