@@ -11,6 +11,7 @@ type ApiGroup struct {
 	DictionaryApi
 	DictionaryDetailApi
 	SystemApi
+	DockerApi
 	DBApi
 	JwtApi
 	OperationRecordApi
@@ -31,3 +32,4 @@ var baseMenuService = service.ServiceGroupApp.SystemServiceGroup.BaseMenuService
 var operationRecordService = service.ServiceGroupApp.SystemServiceGroup.OperationRecordService
 var userService = service.ServiceGroupApp.SystemServiceGroup.UserService
 var systemConfigService = service.ServiceGroupApp.SystemServiceGroup.SystemConfigService
+var dockerService = service.ServiceGroupApp.SystemServiceGroup.DockerService
