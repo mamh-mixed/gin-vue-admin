@@ -8,24 +8,29 @@
             <el-card>
 
               <template #header>
-                <h1>节点信息</h1>
+                <span>节点信息</span>
+                <el-switch
+                    v-model="value"
+                    active-color="#13ce66"
+                    inactive-color="#ff4949">
+                </el-switch>
               </template>
 
               <el-row>
                 <el-col :span="12">
-                  <Detail title="节点名称" content="mamh-left"/>
+                  <DetailInfo title="节点名称" content="mamh-left"/>
                 </el-col>
                 <el-col :span="12">
-                  <Detail title="操作系统" content="Ubuntu 18.04.6" footer="5.4.0-150-generic "/>
+                  <DetailInfo title="操作系统" content="Ubuntu 18.04.6" footer="5.4.0-150-generic "/>
                 </el-col>
               </el-row>
 
               <el-row>
                 <el-col :span="12">
-                  <Detail title="Docker版本" content="24.0.2" footer="Docker Engine - Community "/>
+                  <DetailInfo title="Docker版本" content="24.0.2" footer="Docker Engine - Community "/>
                 </el-col>
                 <el-col :span="12">
-                  <Detail title="Build版本" content="go1.20.4" footer="ApiVersion: 1.43 "/>
+                  <DetailInfo title="Build版本" content="go1.20.4" footer="ApiVersion: 1.43 "/>
                 </el-col>
               </el-row>
 
@@ -38,14 +43,8 @@
               </template>
 
               <el-row>
-                <el-col :span="6">镜像管理
-                  <div class="layui-col-md3 layuimini-qiuck-module">
-                    <a href="#" onClick="javascript:triggerNavMenuClick('ALL', 'images')"
-                       title="镜像管理" data-icon="fa fa-window-maximize">
-                      <i class="fa fa-window-maximize"></i>
-                      <cite>镜像管理</cite>
-                    </a>
-                  </div>
+                <el-col :span="6">
+                  <QuickEntry title="镜像管理"/>
                 </el-col>
                 <el-col :span="6">容器管理
                 </el-col>
@@ -72,18 +71,20 @@
         </el-row>
 
         <el-row :gutter="15" class="docker_portal">
-          <el-col :span="12">
+          <el-col :span="24">
             <el-card class="card_item">
-              <h1 style="background-color: #00a38e">333</h1>
-            </el-card>
-          </el-col>
-          <el-col :span="12">
-            <el-card class="card_item">
-              <h1 style="background-color: #00a38e">444</h1>
+              <h1 style="background-color: #00a38e"> 资源使用率 </h1>
             </el-card>
           </el-col>
         </el-row>
 
+        <el-row :gutter="15" class="docker_portal">
+          <el-col :span="24">
+            <el-card class="card_item">
+              <h1 style="background-color: #00a38e"> 资源使用率 </h1>
+            </el-card>
+          </el-col>
+        </el-row>
       </el-col>
 
       <el-col :span="6">
@@ -119,13 +120,14 @@
 </template>
 
 <script>
-import Detail from './Detail'
+import DetailInfo from './DetailInfo'
+import QuickEntry from './QuickEntry'
 
 export default {
   name: 'Portal',
 
   components: {
-    Detail,
+    DetailInfo,QuickEntry
   },
 
 

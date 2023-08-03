@@ -20,7 +20,7 @@
 <script>
 
 export default {
-  name: 'Detail',
+  name: 'DetailInfo',
   props: ['title', 'content', 'footer']
 
 }
