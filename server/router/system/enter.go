@@ -14,5 +14,4 @@ type RouterGroup struct {
 	OperationRecordRouter
 	SysRouter
 	UserRouter
-	DockerRouter
 }
