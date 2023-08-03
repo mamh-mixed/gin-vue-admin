@@ -2,7 +2,7 @@
   <div>
     <div class="card-header">
       <span>{{ title }}</span>
-      <i class="el-icon-edit"></i>
+      <el-tag :type="tagType" size="mini">实时</el-tag>
     </div>
 
     <div class="card-content">
@@ -21,7 +21,7 @@
 
 export default {
   name: 'DetailInfo',
-  props: ['title', 'content', 'footer']
+  props: ['title', 'content', 'footer', 'tagType']
 
 }
 </script>
@@ -31,7 +31,7 @@ export default {
   display: flex;
   justify-content: space-between;
   font-family: "Helvetica Neue", Helvetica, "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", "微软雅黑", Arial, sans-serif;
-  color: #00dbbe;
+  color: #000;
   padding-right: 10px;
 }
 
