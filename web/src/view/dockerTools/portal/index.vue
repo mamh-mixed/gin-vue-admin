@@ -78,8 +78,8 @@
 
         <el-row :gutter="15" class="docker_portal">
           <el-col :span="24">
-            <el-card class="card_item">
-              <h1 style="background-color: #00a38e"> 资源使用率 </h1>
+            <el-card>
+              <CardInfo/>
             </el-card>
           </el-col>
         </el-row>
@@ -128,19 +128,20 @@
 <script>
 import DetailInfo from './DetailInfo'
 import QuickEntry from './QuickEntry'
+import CardInfo from "./CardInfo"
 
 export default {
   name: 'Portal',
 
   components: {
-    DetailInfo,QuickEntry
+    CardInfo,
+    DetailInfo,
+    QuickEntry
   },
 
 
   data() {
-    return {
-
-    }
+    return {}
   },
   created() {
 
