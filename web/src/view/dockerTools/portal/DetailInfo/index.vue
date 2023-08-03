@@ -9,7 +9,7 @@
           </div>
 
           <div class="detail-content">
-            mamh-left
+            {{ info.Name }}
           </div>
 
           <div class="detail-footer">
@@ -26,11 +26,11 @@
           </div>
 
           <div class="detail-content">
-            Ubuntu 18.04.6 LTS
+            {{ info.OperatingSystem }}
           </div>
 
           <div class="detail-footer">
-            5.4.0-150-generic
+            {{ info.KernelVersion }}
           </div>
         </div>
       </el-col>
@@ -46,11 +46,11 @@
           </div>
 
           <div class="detail-content">
-            24.0.2
+            {{ info.ServerVersion }}
           </div>
 
           <div class="detail-footer">
-            Docker Engine - Community
+            {{ version.Platform.Name }}
           </div>
         </div>
       </el-col>
@@ -62,11 +62,11 @@
           </div>
 
           <div class="detail-content">
-            go1.20.4
+            {{ version.GoVersion }}
           </div>
 
           <div class="detail-footer">
-            ApiVersion: 1.43
+            {{ version.ApiVersion }}
           </div>
         </div>
       </el-col>
@@ -76,9 +76,14 @@
 
 <script>
 
+import {mapGetters} from "vuex";
+
 export default {
   name: 'DetailInfo',
+  computed: {
+    ...mapGetters('docker', ['info', 'version']),
 
+  }
 }
 </script>
 
