@@ -39,7 +39,12 @@
         <el-row :gutter="15" class="docker_portal">
           <el-col :span="24">
             <el-card class="card_item">
-              <h1 style="background-color: #00a38e"> 资源使用率 </h1>
+              <template #header>
+                <div >
+                  <span class="card-head-icon"><i class="fa fa-table icon"></i></span>
+                  <span>资源使用率</span>
+                </div>
+              </template>
             </el-card>
           </el-col>
         </el-row>
@@ -115,4 +120,7 @@ export default {
   height: 600px;
 
 }
+
+
+
 </style>
