@@ -28,3 +28,13 @@ func (a *DockerApi) GetDockerInfo(c *gin.Context) {
 		response.OkWithDetailed(gin.H{"info": info}, "获取成功", c)
 	}
 }
+
+func (a *DockerApi) GetDockerUsages(c *gin.Context) {
+
+	if err, usages := dockerService.GetDockerUsages(); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(gin.H{"usages": usages}, "获取成功", c)
+	}
+}
