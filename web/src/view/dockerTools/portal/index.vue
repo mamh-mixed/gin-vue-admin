@@ -91,10 +91,19 @@ export default {
   },
 
   data() {
-    return {}
+    return {
+      timer: null,
+    }
   },
-  mounted() {
+  created() {
     this.reload()
+    this.timer = setInterval(() => {
+      this.reload()
+    }, 1000 * 30)
+  },
+  beforeDestroy() {
+    clearInterval(this.timer)
+    this.timer = null
   },
   methods: {
     reload() {
