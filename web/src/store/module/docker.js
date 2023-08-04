@@ -1,9 +1,14 @@
-import { getInfo, getVersion } from '@/api/docker'
+import {getInfo, getUsages, getVersion} from '@/api/docker'
 
 export const docker = {
   namespaced: true,
   state: {
     info: {},
+    usages: {
+      cpu:[0],
+      disk:{},
+      memory:{}
+    },
     version: {
       Platform:{
         Name:'null'
@@ -16,6 +21,9 @@ export const docker = {
     },
     setVersion(state, version) {
       state.version = version
+    },
+    setUsages(state, usages) {
+      state.usages = usages
     },
   },
   actions: {
@@ -34,6 +42,14 @@ export const docker = {
         commit('setVersion', res.data.version)
       }
       return res
+    },
+
+    async getUsages({ commit }) {
+      const res = await getUsages()
+      if (res.code === 0) {
+        commit('setUsages', res.data.usages)
+      }
+      return res
     }
   },
   getters: {
@@ -42,6 +58,10 @@ export const docker = {
     },
     version(state) {
       return state.version
+    },
+
+    usages(state) {
+      return state.usages
     },
   }
 }
