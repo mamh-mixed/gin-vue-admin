@@ -100,6 +100,7 @@ export default {
     reload() {
       this.$store.dispatch('docker/getInfo')
       this.$store.dispatch('docker/getVersion')
+      this.$store.dispatch('docker/getUsages')
     },
   }
 }

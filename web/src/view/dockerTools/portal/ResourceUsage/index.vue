@@ -5,7 +5,7 @@
       <el-col :span="12">
         <el-progress
             type="line"
-            :percentage="+cpuUsages.toFixed(0)"
+            :percentage="cpuUsages"
             :color="colors"
         />
       </el-col>
@@ -16,7 +16,7 @@
       <el-col :span="12">
         <el-progress
             type="line"
-            :percentage="+memUsages.toFixed(0)"
+            :percentage="+memUsages"
             :color="colors"
         />
       </el-col>
@@ -27,7 +27,7 @@
       <el-col :span="12">
         <el-progress
             type="line"
-            :percentage="+diskUsages.toFixed(0)"
+            :percentage="+diskUsages"
             :color="colors"
         />
       </el-col>
@@ -43,6 +43,7 @@ export default {
   name: 'ResourceUsage',
   data() {
     return {
+      timer: null,
       diskUsages: 10,
       cpuUsages: 30,
       memUsages: 89,
@@ -53,10 +54,21 @@ export default {
       ]
     }
   },
-  computed: {
-    ...mapGetters('docker', ['info', 'version']),
 
-  }
+
+  computed: {
+    ...mapGetters('docker', ['info', 'version', 'usages']),
+    diskUsages() {
+      return (this.usages.disk.used * 100 / this.usages.disk.total).toFixed(2)
+    },
+    cpuUsages() {
+      return (+this.usages.cpu[0]).toFixed(2)
+    },
+    memUsages() {
+      return (this.usages.memory.used * 100 / this.usages.memory.total).toFixed(2)
+    }
+  },
+  methods: {}
 }
 </script>
 
