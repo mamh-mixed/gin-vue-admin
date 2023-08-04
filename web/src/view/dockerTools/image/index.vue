@@ -35,6 +35,7 @@
 
 <script>
 import {getImages} from '@/api/docker'
+import moment from "moment";
 
 export default {
   name: 'ImageView',
@@ -58,18 +59,20 @@ export default {
     async getTableData() {
       const res = await  getImages()
       const images = res.data.images
+      console.warn(images)
       for(let image of images){
         for(let tag of image.RepoTags){
           let tagArray = tag.split(':');
           let idArray = image.Id.split(':');
+          let daytime = moment(parseInt(image.Created)*1000).format('YYYY-MM-DD HH:mm:ss')
 
           this.tableData.push({
             Id: idArray[1].slice(0, 12),
             Repository: tagArray[0],
             Tag: tagArray[1],
-            Created: image.Created,
-            Size: image.Size,
-            Labels:  image.Labels,
+            Created: daytime,
+            Size: `${(image.Size/1000/1000).toFixed(0)} MB`,
+            Labels:  "",
           })
 
         }
