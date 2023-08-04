@@ -40,7 +40,7 @@ func (s *DockerService) GetDockerUsages() (error, interface{}) {
 	cpuPercent, _ := cpu.Percent(time.Second, false)
 	diskinfo, _ := disk.Usage(info.DockerRootDir) //指定某路径的硬盘使用情况
 
-	data := make(map[string]any)
+	data := make(map[string]interface{})
 	data["cpu"] = cpuPercent
 	data["disk"] = diskinfo
 	data["memory"] = vmem
