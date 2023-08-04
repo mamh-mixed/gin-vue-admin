@@ -49,8 +49,6 @@
 
 export default {
   name: 'CardInfo',
-  props: ['title', 'className']
-
 }
 </script>
 

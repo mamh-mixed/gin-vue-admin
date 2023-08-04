@@ -57,23 +57,9 @@
               <template #header>
                 <h1>概览</h1>
               </template>
-              <el-table
-                  :data="tableData"
-                  height="600"
-                  style="width: 100%">
-                <el-table-column
-                    prop="date"
-                    label="日期"
-                    width="180">
-                </el-table-column>
-                <el-table-column
-                    prop="name"
-                    label="姓名"
-                    width="180">
-                </el-table-column>
 
+              <OverView/>
 
-              </el-table>
             </el-card>
           </el-col>
         </el-row>
@@ -88,6 +74,7 @@
 import DetailInfo from './DetailInfo'
 import QuickEntry from './QuickEntry'
 import CardInfo from "./CardInfo"
+import OverView from "./OverView"
 
 export default {
   name: 'Portal',
@@ -95,7 +82,8 @@ export default {
   components: {
     CardInfo,
     DetailInfo,
-    QuickEntry
+    QuickEntry,
+    OverView
   },
 
   data() {
