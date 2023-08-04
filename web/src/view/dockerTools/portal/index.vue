@@ -10,12 +10,12 @@
               <template #header>
                 <span>节点信息</span>
                 <el-switch
-                    v-model="value"
-                    active-color="#13ce66"
-                    inactive-color="#ff4949">
-                </el-switch>
+                  v-model="value"
+                  active-color="#13ce66"
+                  inactive-color="#ff4949"
+                />
               </template>
-              <DetailInfo/>
+              <DetailInfo />
             </el-card>
           </el-col>
           <el-col :span="12">
@@ -23,7 +23,7 @@
               <template #header>
                 <h1>快捷入口</h1>
               </template>
-              <QuickEntry/>
+              <QuickEntry />
             </el-card>
           </el-col>
         </el-row>
@@ -31,7 +31,7 @@
         <el-row :gutter="15" class="docker_portal">
           <el-col :span="24">
             <el-card>
-              <CardInfo/>
+              <CardInfo />
             </el-card>
           </el-col>
         </el-row>
@@ -40,11 +40,14 @@
           <el-col :span="24">
             <el-card class="card_item">
               <template #header>
-                <div >
-                  <span class="card-head-icon"><i class="fa fa-table icon"></i></span>
+                <div>
+                  <span class="card-head-icon"><i class="fa fa-table icon" /></span>
                   <span>资源使用率</span>
                 </div>
               </template>
+
+              <ResourceUsage/>
+
             </el-card>
           </el-col>
         </el-row>
@@ -58,7 +61,7 @@
                 <h1>概览</h1>
               </template>
 
-              <OverView/>
+              <OverView />
 
             </el-card>
           </el-col>
@@ -66,15 +69,15 @@
       </el-col>
     </el-row>
 
-
   </div>
 </template>
 
 <script>
 import DetailInfo from './DetailInfo'
 import QuickEntry from './QuickEntry'
-import CardInfo from "./CardInfo"
-import OverView from "./OverView"
+import CardInfo from './CardInfo'
+import OverView from './OverView'
+import ResourceUsage from './ResourceUsage'
 
 export default {
   name: 'Portal',
@@ -83,7 +86,8 @@ export default {
     CardInfo,
     DetailInfo,
     QuickEntry,
-    OverView
+    OverView,
+    ResourceUsage
   },
 
   data() {
@@ -114,6 +118,5 @@ export default {
   height: 600px;
 
 }
-
 
 </style>
