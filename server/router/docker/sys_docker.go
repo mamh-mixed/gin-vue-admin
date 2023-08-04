@@ -16,5 +16,6 @@ func (s *DockerRouter) InitDockerRouter(Router *gin.RouterGroup) {
 		dockerRouter.GET("getVersion", dockerApi.GetDockerVersion)
 		dockerRouter.GET("getInfo", dockerApi.GetDockerInfo)
 		dockerRouter.GET("getUsages", dockerApi.GetDockerUsages)
+		dockerRouter.GET("getImages", dockerApi.GetDockerImages)
 	}
 }
