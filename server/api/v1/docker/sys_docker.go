@@ -30,11 +30,19 @@ func (a *DockerApi) GetDockerInfo(c *gin.Context) {
 }
 
 func (a *DockerApi) GetDockerUsages(c *gin.Context) {
-
 	if err, usages := dockerService.GetDockerUsages(); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
 		response.FailWithMessage("获取失败", c)
 	} else {
 		response.OkWithDetailed(gin.H{"usages": usages}, "获取成功", c)
+	}
+}
+
+func (a *DockerApi) GetDockerImages(c *gin.Context) {
+	if err, images := dockerService.GetDockerImages(); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Any("err", err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithDetailed(gin.H{"images": images}, "获取成功", c)
 	}
 }
