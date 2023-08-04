@@ -24,3 +24,10 @@ export const getUsages = () => {
     donNotShowLoading: true
   })
 }
+
+export const getImages = () => {
+  return service({
+    url: '/docker/getImages',
+    method: 'get',
+  })
+}
