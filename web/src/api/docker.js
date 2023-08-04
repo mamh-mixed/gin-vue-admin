@@ -14,3 +14,10 @@ export const getInfo = () => {
         method: 'get'
     })
 }
+
+export const getUsages = () => {
+  return service({
+    url: '/docker/getUsages',
+    method: 'get'
+  })
+}
