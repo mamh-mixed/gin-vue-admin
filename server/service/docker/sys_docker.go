@@ -2,6 +2,7 @@ package docker
 
 import (
 	"context"
+	"github.com/docker/docker/api/types"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/shirou/gopsutil/cpu"
 	"github.com/shirou/gopsutil/disk"
@@ -45,4 +46,13 @@ func (s *DockerService) GetDockerUsages() (error, interface{}) {
 	data["disk"] = diskinfo
 	data["memory"] = vmem
 	return nil, data
+}
+
+func (s *DockerService) GetDockerImages() (error, interface{}) {
+	opt := types.ImageListOptions{}
+	list, err := global.GVA_DOCKER.ImageList(context.Background(), opt)
+	if err != nil {
+		return err, nil
+	}
+	return nil, list
 }
