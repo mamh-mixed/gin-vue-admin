@@ -19,8 +19,11 @@ func (s *CsOperatorRouter) InitCsOperatorRouter(Router *gin.RouterGroup) {
 		csOperatorRouter.DELETE("deleteCsOperator", csOperatorApi.DeleteCsOperator)           // 删除CsOperator
 		csOperatorRouter.DELETE("deleteCsOperatorByIds", csOperatorApi.DeleteCsOperatorByIds) // 批量删除CsOperator
 		csOperatorRouter.PUT("updateCsOperator", csOperatorApi.UpdateCsOperator)              // 更新CsOperator
-		csOperatorRouter.PUT("setTenantApis", csOperatorApi.SetOperatorApis)                  // 系统分配运营商api
-		csOperatorRouter.PUT("setTenantMenus", csOperatorApi.SetOperatorMenus)                // 系统分配运营商菜单
+		csOperatorRouter.PUT("setOperatorApis", csOperatorApi.SetOperatorApis)                // 系统分配运营商api
+		csOperatorRouter.PUT("setOperatorMenus", csOperatorApi.SetOperatorMenus)              // 系统分配运营商菜单
+		csOperatorRouter.GET("getApisByOperatorID", csOperatorApi.GetApisByOperatorID)        // 系统获取运营商api
+		csOperatorRouter.GET("getMenusByOperatorID", csOperatorApi.GetMenusByOperatorID)      // 系统获取运营商菜单
+		csOperatorRouter.POST("createCsOperatorAdmin", csOperatorApi.CreateCsOperatorAdmin)   // 创建运营商管理员
 	}
 	{
 		csOperatorRouterWithoutRecord.GET("findCsOperator", csOperatorApi.FindCsOperator)       // 根据ID获取CsOperator

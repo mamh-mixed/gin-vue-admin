@@ -64,7 +64,7 @@ func (autoCodeHistoryService *AutoCodeHistoryService) Repeat(businessDB, structN
 // RollBack 回滚
 // Author [SliverHorn](https://github.com/SliverHorn)
 // Author [songzhibin97](https://github.com/songzhibin97)
-func (autoCodeHistoryService *AutoCodeHistoryService) RollBack(info *systemReq.RollBack, tenantID uint) error {
+func (autoCodeHistoryService *AutoCodeHistoryService) RollBack(info *systemReq.RollBack, tenantID uint, operatorID uint) error {
 	md := system.SysAutoCodeHistory{}
 	if err := global.GVA_DB.Where("id = ?", info.ID).First(&md).Error; err != nil {
 		return err
@@ -80,7 +80,7 @@ func (autoCodeHistoryService *AutoCodeHistoryService) RollBack(info *systemReq.R
 		}
 		ids.Ids = append(ids.Ids, id)
 	}
-	err := ApiServiceApp.DeleteApisByIds(ids, tenantID)
+	err := ApiServiceApp.DeleteApisByIds(ids, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("ClearTag DeleteApiByIds:", zap.Error(err))
 	}

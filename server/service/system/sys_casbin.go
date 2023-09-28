@@ -25,14 +25,14 @@ type CasbinService struct{}
 
 var CasbinServiceApp = new(CasbinService)
 
-func (casbinService *CasbinService) UpdateCasbin(AuthorityID uint, casbinInfos []request.CasbinInfo, tenantID uint) error {
+func (casbinService *CasbinService) UpdateCasbin(AuthorityID uint, casbinInfos []request.CasbinInfo, tenantID uint, operatorID uint) error {
 	authorityId := strconv.Itoa(int(AuthorityID))
-	casbinService.ClearCasbin(tenantID, 0, authorityId)
+	casbinService.ClearCasbin(tenantID, operatorID, 0, authorityId)
 	rules := [][]string{}
 	for _, v := range casbinInfos {
 		rules = append(rules, []string{authorityId, v.Path, v.Method})
 	}
-	e := casbinService.Casbin(tenantID)
+	e := casbinService.Casbin(tenantID, operatorID)
 	success, _ := e.AddPolicies(rules)
 	if !success {
 		return errors.New("存在相同api,添加失败,请联系管理员")
@@ -46,12 +46,12 @@ func (casbinService *CasbinService) UpdateCasbin(AuthorityID uint, casbinInfos [
 //@param: oldPath string, newPath string, oldMethod string, newMethod string
 //@return: error
 
-func (casbinService *CasbinService) UpdateCasbinApi(oldPath string, newPath string, oldMethod string, newMethod string, tenantID uint) error {
+func (casbinService *CasbinService) UpdateCasbinApi(oldPath string, newPath string, oldMethod string, newMethod string, tenantID uint, operatorID uint) error {
 	err := global.GVA_DB.Model(&gormadapter.CasbinRule{}).Where("v1 = ? AND v2 = ?", oldPath, oldMethod).Updates(map[string]interface{}{
 		"v1": newPath,
 		"v2": newMethod,
 	}).Error
-	e := casbinService.Casbin(tenantID)
+	e := casbinService.Casbin(tenantID, operatorID)
 	err = e.LoadPolicy()
 	if err != nil {
 		return err
@@ -65,8 +65,8 @@ func (casbinService *CasbinService) UpdateCasbinApi(oldPath string, newPath stri
 //@param: authorityId string
 //@return: pathMaps []request.CasbinInfo
 
-func (casbinService *CasbinService) GetPolicyPathByAuthorityId(AuthorityID uint, tenantID uint) (pathMaps []request.CasbinInfo) {
-	e := casbinService.Casbin(tenantID)
+func (casbinService *CasbinService) GetPolicyPathByAuthorityId(AuthorityID uint, tenantID uint, operatorID uint) (pathMaps []request.CasbinInfo) {
+	e := casbinService.Casbin(tenantID, operatorID)
 	authorityId := strconv.Itoa(int(AuthorityID))
 	list := e.GetFilteredPolicy(0, authorityId)
 	for _, v := range list {
@@ -84,8 +84,8 @@ func (casbinService *CasbinService) GetPolicyPathByAuthorityId(AuthorityID uint,
 //@param: v int, p ...string
 //@return: bool
 
-func (casbinService *CasbinService) ClearCasbin(tenantId uint, v int, p ...string) bool {
-	e := casbinService.Casbin(tenantId)
+func (casbinService *CasbinService) ClearCasbin(tenantID uint, operatorID uint, v int, p ...string) bool {
+	e := casbinService.Casbin(tenantID, operatorID)
 	success, _ := e.RemoveFilteredPolicy(v, p...)
 	return success
 }
@@ -100,8 +100,8 @@ var (
 	once                 sync.Once
 )
 
-func (casbinService *CasbinService) Casbin(tenantID uint) *casbin.SyncedCachedEnforcer {
-	a, err := gormadapter.NewAdapterByDBUseTableName(global.GVA_DB, "", utils.GetCasbinName(tenantID))
+func (casbinService *CasbinService) Casbin(tenantID uint, operatorID uint) *casbin.SyncedCachedEnforcer {
+	a, err := gormadapter.NewAdapterByDBUseTableName(global.GVA_DB, "", utils.GetCasbinName(tenantID, operatorID))
 	if err != nil {
 		zap.L().Error("适配数据库失败请检查casbin表是否为InnoDB引擎!", zap.Error(err))
 		return nil

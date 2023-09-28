@@ -10,6 +10,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"strconv"
 )
 
 type CsTenantApi struct {
@@ -42,6 +43,17 @@ func (csTenantApi *CsTenantApi) CreateCsTenant(c *gin.Context) {
 		return
 	}
 	if err := csTenantService.CreateCsTenant(&csTenant); err != nil {
+		global.GVA_LOG.Error("创建失败!", zap.Error(err))
+		response.FailWithMessage("创建失败", c)
+	} else {
+		response.OkWithMessage("创建成功", c)
+	}
+}
+
+func (csTenantApi *CsTenantApi) CreateCsTenantAdmin(c *gin.Context) {
+	tenantStr := c.Query("tenantID")
+	tenantID, _ := strconv.Atoi(tenantStr)
+	if err := csTenantService.CreateTenantAdmin(uint(tenantID)); err != nil {
 		global.GVA_LOG.Error("创建失败!", zap.Error(err))
 		response.FailWithMessage("创建失败", c)
 	} else {
@@ -224,10 +236,10 @@ func (csTenantApi *CsTenantApi) GetApisByTenantID(c *gin.Context) {
 
 func (csTenantApi *CsTenantApi) GetMenusByTenantID(c *gin.Context) {
 	id := c.Query("tenantID")
-	if apis, err := csTenantService.GetTenantMenus(id); err != nil {
+	if menus, err := csTenantService.GetTenantMenus(id); err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
 	} else {
-		response.OkWithData(apis, c)
+		response.OkWithData(menus, c)
 	}
 }

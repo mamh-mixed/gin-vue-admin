@@ -31,7 +31,7 @@
 
 <script setup>
 import { getAllApis } from '@/api/api'
-import { getApisByTenantID,setTenantApis } from '@/api/csTenant'
+import { getApisByOperatorID,setOperatorApis } from '@/api/csOperator'
 import { ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 
@@ -55,13 +55,13 @@ const apiDefaultProps = ref({
 const filterText = ref('')
 const apiTreeData = ref([])
 const apiTreeIds = ref([])
-const activeTenant = ref('')
+const activeOperator = ref('')
 const init = async() => {
   const res2 = await getAllApis()
   const apis = res2.data.apis
   apiTreeData.value = buildApiTree(apis)
-  const res = await getApisByTenantID({ tenantID: props.row.ID })
-  activeTenant.value = props.row.ID
+  const res = await getApisByOperatorID({ operatorID: props.row.ID })
+  activeOperator.value = props.row.ID
   apiTreeIds.value = []
   res.data && res.data.forEach(item => {
     apiTreeIds.value.push(item.apiId)
@@ -113,8 +113,8 @@ const authApiEnter = async() => {
       apiIds.push(item.ID)
     }
   })
-  const res = await setTenantApis({
-    tenantID: props.row.ID,
+  const res = await setOperatorApis({
+    operatorID: props.row.ID,
     apiIds
   })
   if (res.code === 0) {

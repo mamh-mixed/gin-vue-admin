@@ -25,7 +25,8 @@ type AuthorityMenuApi struct{}
 // @Router    /menu/getMenu [post]
 func (a *AuthorityMenuApi) GetMenu(c *gin.Context) {
 	tenantID := utils.GetTenantID(c)
-	menus, err := menuService.GetMenuTree(utils.GetUserAuthorityId(c), tenantID)
+	operatorID := utils.GetOperatorID(c)
+	menus, err := menuService.GetMenuTree(utils.GetUserAuthorityId(c), tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
@@ -47,7 +48,8 @@ func (a *AuthorityMenuApi) GetMenu(c *gin.Context) {
 // @Router    /menu/getBaseMenuTree [post]
 func (a *AuthorityMenuApi) GetBaseMenuTree(c *gin.Context) {
 	tenantID := utils.GetTenantID(c)
-	menus, err := menuService.GetBaseMenuTree(tenantID)
+	operatorID := utils.GetOperatorID(c)
+	menus, err := menuService.GetBaseMenuTree(tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
@@ -77,7 +79,8 @@ func (a *AuthorityMenuApi) AddMenuAuthority(c *gin.Context) {
 		return
 	}
 	tenantID := utils.GetTenantID(c)
-	if err := menuService.AddMenuAuthority(authorityMenu.Menus, authorityMenu.AuthorityId, tenantID); err != nil {
+	operatorID := utils.GetOperatorID(c)
+	if err := menuService.AddMenuAuthority(authorityMenu.Menus, authorityMenu.AuthorityId, tenantID, operatorID); err != nil {
 		global.GVA_LOG.Error("添加失败!", zap.Error(err))
 		response.FailWithMessage("添加失败", c)
 	} else {
@@ -98,6 +101,8 @@ func (a *AuthorityMenuApi) GetMenuAuthority(c *gin.Context) {
 	var param request.GetAuthorityId
 	err := c.ShouldBindJSON(&param)
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
+
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -107,7 +112,7 @@ func (a *AuthorityMenuApi) GetMenuAuthority(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	menus, err := menuService.GetMenuAuthority(&param, tenantID)
+	menus, err := menuService.GetMenuAuthority(&param, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithDetailed(systemRes.SysMenusResponse{Menus: menus}, "获取失败", c)
@@ -268,7 +273,8 @@ func (a *AuthorityMenuApi) GetMenuList(c *gin.Context) {
 		return
 	}
 	tenantID := utils.GetTenantID(c)
-	menuList, total, err := menuService.GetInfoList(tenantID)
+	operatorID := utils.GetOperatorID(c)
+	menuList, total, err := menuService.GetInfoList(tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)

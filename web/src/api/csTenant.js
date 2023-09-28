@@ -130,3 +130,10 @@ export const getMenusByTenantID = (params) =>{
     params
   })
 }
+
+export const createCsTenantAdmin = (tenantID) =>{
+  return service({
+    url: '/csTenant/createCsTenantAdmin?tenantID='+tenantID,
+    method: 'post'
+  })
+}

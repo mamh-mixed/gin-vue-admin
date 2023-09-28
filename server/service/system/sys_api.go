@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/flipped-aurora/gin-vue-admin/server/global"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/common/request"
+	"github.com/flipped-aurora/gin-vue-admin/server/model/operator"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/system"
 	"github.com/flipped-aurora/gin-vue-admin/server/model/tenant"
 
@@ -34,7 +35,7 @@ func (apiService *ApiService) CreateApi(api system.SysApi) (err error) {
 //@param: api model.SysApi
 //@return: err error
 
-func (apiService *ApiService) DeleteApi(api system.SysApi, tenantId uint) (err error) {
+func (apiService *ApiService) DeleteApi(api system.SysApi, tenantID uint, operatorID uint) (err error) {
 	var entity system.SysApi
 	err = global.GVA_DB.Where("id = ?", api.ID).First(&entity).Error // 根据id查询api记录
 	if errors.Is(err, gorm.ErrRecordNotFound) {                      // api记录不存在
@@ -44,7 +45,7 @@ func (apiService *ApiService) DeleteApi(api system.SysApi, tenantId uint) (err e
 	if err != nil {
 		return err
 	}
-	CasbinServiceApp.ClearCasbin(tenantId, 1, entity.Path, entity.Method)
+	CasbinServiceApp.ClearCasbin(tenantID, operatorID, 1, entity.Path, entity.Method)
 	if err != nil {
 		return err
 	}
@@ -57,7 +58,7 @@ func (apiService *ApiService) DeleteApi(api system.SysApi, tenantId uint) (err e
 //@param: api model.SysApi, info request.PageInfo, order string, desc bool
 //@return: list interface{}, total int64, err error
 
-func (apiService *ApiService) GetAPIInfoList(tenantID uint, api system.SysApi, info request.PageInfo, order string, desc bool) (list interface{}, total int64, err error) {
+func (apiService *ApiService) GetAPIInfoList(tenantID uint, operatorID uint, api system.SysApi, info request.PageInfo, order string, desc bool) (list interface{}, total int64, err error) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 
@@ -65,7 +66,7 @@ func (apiService *ApiService) GetAPIInfoList(tenantID uint, api system.SysApi, i
 
 	var apiList []system.SysApi
 
-	if tenantID != 0 {
+	if tenantID != 0 && operatorID == 0 {
 		// 租户获取自己可控的api
 		var tenantApis []tenant.CsTenantApis
 		teApiErr := global.GVA_DB.Where("tenant_id = ?", tenantID).Find(&tenantApis).Error
@@ -77,6 +78,19 @@ func (apiService *ApiService) GetAPIInfoList(tenantID uint, api system.SysApi, i
 			return apiList, total, teApiErr
 		}
 		db = db.Where("id in ?", tenantApiIDs)
+	}
+
+	if tenantID != 0 && operatorID != 0 {
+		var operatorApis []operator.CsOperatorApis
+		teApiErr := global.GVA_DB.Where("operator_id = ?", operatorID).Find(&operatorApis).Error
+		operatorApiIDs := make([]uint, 0)
+		for _, operatorApi := range operatorApis {
+			operatorApiIDs = append(operatorApiIDs, operatorApi.ApiId)
+		}
+		if teApiErr != nil {
+			return apiList, total, teApiErr
+		}
+		db = db.Where("id in ?", operatorApiIDs)
 	}
 
 	if api.Path != "" {
@@ -135,9 +149,9 @@ func (apiService *ApiService) GetAPIInfoList(tenantID uint, api system.SysApi, i
 //@description: 获取所有的api
 //@return:  apis []model.SysApi, err error
 
-func (apiService *ApiService) GetAllApis(tenantID uint) (apis []system.SysApi, err error) {
+func (apiService *ApiService) GetAllApis(tenantID uint, operatorID uint) (apis []system.SysApi, err error) {
 	db := global.GVA_DB
-	if tenantID != 0 {
+	if tenantID != 0 && operatorID == 0 {
 		// 租户获取自己可控的api
 		var tenantApis []tenant.CsTenantApis
 		teApiErr := global.GVA_DB.Where("tenant_id = ?", tenantID).Find(&tenantApis).Error
@@ -149,6 +163,20 @@ func (apiService *ApiService) GetAllApis(tenantID uint) (apis []system.SysApi, e
 			return
 		}
 		db = db.Where("id in ?", tenantApiIDs)
+	}
+
+	if tenantID != 0 && operatorID != 0 {
+		// 租户获取自己可控的api
+		var operatorApis []operator.CsOperatorApis
+		teApiErr := global.GVA_DB.Where("operator_id = ?", operatorID).Find(&operatorApis).Error
+		operatorApiIDs := make([]uint, 0)
+		for _, tenantApi := range operatorApis {
+			operatorApiIDs = append(operatorApiIDs, tenantApi.ApiId)
+		}
+		if teApiErr != nil {
+			return
+		}
+		db = db.Where("id in ?", operatorApiIDs)
 	}
 	err = db.Find(&apis).Error
 	return
@@ -171,7 +199,7 @@ func (apiService *ApiService) GetApiById(id int) (api system.SysApi, err error) 
 //@param: api model.SysApi
 //@return: err error
 
-func (apiService *ApiService) UpdateApi(api system.SysApi, tenantID uint) (err error) {
+func (apiService *ApiService) UpdateApi(api system.SysApi, tenantID uint, operatorID uint) (err error) {
 	var oldA system.SysApi
 	err = global.GVA_DB.Where("id = ?", api.ID).First(&oldA).Error
 	if oldA.Path != api.Path || oldA.Method != api.Method {
@@ -182,7 +210,7 @@ func (apiService *ApiService) UpdateApi(api system.SysApi, tenantID uint) (err e
 	if err != nil {
 		return err
 	} else {
-		err = CasbinServiceApp.UpdateCasbinApi(oldA.Path, api.Path, oldA.Method, api.Method, tenantID)
+		err = CasbinServiceApp.UpdateCasbinApi(oldA.Path, api.Path, oldA.Method, api.Method, tenantID, operatorID)
 		if err != nil {
 			return err
 		} else {
@@ -198,14 +226,14 @@ func (apiService *ApiService) UpdateApi(api system.SysApi, tenantID uint) (err e
 //@param: apis []model.SysApi
 //@return: err error
 
-func (apiService *ApiService) DeleteApisByIds(ids request.IdsReq, tenantId uint) (err error) {
+func (apiService *ApiService) DeleteApisByIds(ids request.IdsReq, tenantID uint, operatorID uint) (err error) {
 	var apis []system.SysApi
 	err = global.GVA_DB.Find(&apis, "id in ?", ids.Ids).Delete(&apis).Error
 	if err != nil {
 		return err
 	} else {
 		for _, sysApi := range apis {
-			CasbinServiceApp.ClearCasbin(tenantId, 1, sysApi.Path, sysApi.Method)
+			CasbinServiceApp.ClearCasbin(tenantID, operatorID, 1, sysApi.Path, sysApi.Method)
 		}
 		if err != nil {
 			return err
@@ -220,8 +248,8 @@ func (apiService *ApiService) DeleteApisByIds(ids request.IdsReq, tenantId uint)
 //@param: apis []model.SysApi
 //@return: err error
 
-func (apiService *ApiService) FreshCasbin(tenantID uint) (err error) {
-	e := CasbinServiceApp.Casbin(tenantID)
+func (apiService *ApiService) FreshCasbin(tenantID uint, operatorID uint) (err error) {
+	e := CasbinServiceApp.Casbin(tenantID, operatorID)
 	err = e.LoadPolicy()
 	return err
 }

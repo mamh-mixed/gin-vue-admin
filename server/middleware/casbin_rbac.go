@@ -26,7 +26,8 @@ func CasbinHandler() gin.HandlerFunc {
 			// 获取用户的角色
 			sub := strconv.Itoa(int(waitUse.AuthorityId))
 			tenantID := waitUse.TenantID
-			e := casbinService.Casbin(tenantID) // 判断策略中是否存在
+			operatorID := waitUse.OperatorID
+			e := casbinService.Casbin(tenantID, operatorID) // 判断策略中是否存在
 			success, _ := e.Enforce(sub, obj, act)
 			if !success {
 				response.FailWithDetailed(gin.H{}, "权限不足", c)

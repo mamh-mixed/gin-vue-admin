@@ -71,7 +71,7 @@
 
 <script setup>
 import { getBaseMenuTree } from '@/api/menu'
-import { getMenusByTenantID,setTenantMenus } from '@/api/csTenant'
+import { getMenusByOperatorID,setOperatorMenus } from '@/api/csOperator'
 
 
 import { nextTick, ref, watch } from 'vue'
@@ -106,7 +106,7 @@ const init = async() => {
   // 获取所有菜单树
   const res = await getBaseMenuTree()
   menuTreeData.value = res.data.menus
-  const res1 = await getMenusByTenantID({ tenantID: props.row.ID })
+  const res1 = await getMenusByOperatorID({ operatorID: props.row.ID })
   const menus = res1.data
   const arr = []
   menus.forEach(item => {
@@ -135,9 +135,9 @@ const menuTree = ref(null)
 const relation = async() => {
   const checkArr = menuTree.value.getCheckedNodes(false, true)
   const menuIds = checkArr.map(item => item.ID)
-  const res = await setTenantMenus({
+  const res = await setOperatorMenus({
     menuIds: menuIds,
-    tenantID: props.row.ID
+    operatorID: props.row.ID
   })
   if (res.code === 0) {
     ElMessage({

@@ -95,3 +95,47 @@ export const getCsOperatorList = (params) => {
     params
   })
 }
+
+export const createCsOperatorAdmin = (operatorID) =>{
+  return service({
+    url: '/csOperator/createCsOperatorAdmin?operatorID='+operatorID,
+    method: 'post'
+  })
+}
+
+
+
+export const setOperatorApis = (data) =>{
+  return service({
+    url: '/csOperator/setOperatorApis',
+    method: 'put',
+    data
+  })
+}
+
+export const setOperatorMenus = (data) =>{
+  return service({
+    url: '/csOperator/setOperatorMenus',
+    method: 'put',
+    data
+  })
+}
+
+
+
+
+export const getApisByOperatorID = (params) =>{
+  return service({
+    url: '/csOperator/getApisByOperatorID',
+    method: 'get',
+    params
+  })
+}
+
+export const getMenusByOperatorID = (params) =>{
+  return service({
+    url: '/csOperator/getMenusByOperatorID',
+    method: 'get',
+    params
+  })
+}

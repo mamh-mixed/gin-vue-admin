@@ -28,6 +28,7 @@ func (a *AuthorityApi) CreateAuthority(c *gin.Context) {
 	var authority system.SysAuthority
 	err := c.ShouldBindJSON(&authority)
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -38,12 +39,12 @@ func (a *AuthorityApi) CreateAuthority(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	if authBack, err := authorityService.CreateAuthority(authority, tenantID); err != nil {
+	if authBack, err := authorityService.CreateAuthority(authority, tenantID, operatorID); err != nil {
 		global.GVA_LOG.Error("创建失败!", zap.Error(err))
 		response.FailWithMessage("创建失败"+err.Error(), c)
 	} else {
-		_ = menuService.AddMenuAuthority(systemReq.DefaultMenu(), authority.AuthorityId, tenantID)
-		_ = casbinService.UpdateCasbin(authority.AuthorityId, systemReq.DefaultCasbin(), tenantID)
+		_ = menuService.AddMenuAuthority(systemReq.DefaultMenu(), authority.AuthorityId, tenantID, operatorID)
+		_ = casbinService.UpdateCasbin(authority.AuthorityId, systemReq.DefaultCasbin(), tenantID, operatorID)
 		response.OkWithDetailed(systemRes.SysAuthorityResponse{Authority: authBack}, "创建成功", c)
 	}
 }
@@ -62,6 +63,7 @@ func (a *AuthorityApi) CopyAuthority(c *gin.Context) {
 	var copyInfo systemRes.SysAuthorityCopyResponse
 	err := c.ShouldBindJSON(&copyInfo)
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -76,7 +78,7 @@ func (a *AuthorityApi) CopyAuthority(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	authBack, err := authorityService.CopyAuthority(copyInfo, tenantID)
+	authBack, err := authorityService.CopyAuthority(copyInfo, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("拷贝失败!", zap.Error(err))
 		response.FailWithMessage("拷贝失败"+err.Error(), c)
@@ -97,7 +99,8 @@ func (a *AuthorityApi) CopyAuthority(c *gin.Context) {
 func (a *AuthorityApi) DeleteAuthority(c *gin.Context) {
 	var authority system.SysAuthority
 	err := c.ShouldBindJSON(&authority)
-	tenantId := utils.GetTenantID(c)
+	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -107,7 +110,7 @@ func (a *AuthorityApi) DeleteAuthority(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err = authorityService.DeleteAuthority(&authority, tenantId)
+	err = authorityService.DeleteAuthority(&authority, tenantID, operatorID)
 	if err != nil { // 删除角色之前需要判断是否有用户正在使用此角色
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
 		response.FailWithMessage("删除失败"+err.Error(), c)
@@ -130,7 +133,7 @@ func (a *AuthorityApi) UpdateAuthority(c *gin.Context) {
 	var auth system.SysAuthority
 	err := c.ShouldBindJSON(&auth)
 	tenantID := utils.GetTenantID(c)
-
+	operatorID := utils.GetOperatorID(c)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -140,7 +143,7 @@ func (a *AuthorityApi) UpdateAuthority(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	authority, err := authorityService.UpdateAuthority(auth, tenantID)
+	authority, err := authorityService.UpdateAuthority(auth, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Error(err))
 		response.FailWithMessage("更新失败"+err.Error(), c)
@@ -162,6 +165,7 @@ func (a *AuthorityApi) GetAuthorityList(c *gin.Context) {
 	var pageInfo request.PageInfo
 	err := c.ShouldBindJSON(&pageInfo)
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -171,7 +175,7 @@ func (a *AuthorityApi) GetAuthorityList(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	list, total, err := authorityService.GetAuthorityInfoList(pageInfo, tenantID)
+	list, total, err := authorityService.GetAuthorityInfoList(pageInfo, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败"+err.Error(), c)

@@ -10,6 +10,7 @@ import (
 	"github.com/flipped-aurora/gin-vue-admin/server/utils"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"strconv"
 )
 
 type CsOperatorApi struct {
@@ -28,12 +29,13 @@ var csOperatorService = service.ServiceGroupApp.OperatorServiceGroup.CsOperatorS
 // @Router /csOperator/createCsOperator [post]
 func (csOperatorApi *CsOperatorApi) CreateCsOperator(c *gin.Context) {
 	var csOperator operator.CsOperator
+	tenantID := utils.GetTenantID(c)
 	err := c.ShouldBindJSON(&csOperator)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	csOperator.CreatedBy = utils.GetUserID(c)
+	csOperator.TenantID = tenantID
 	if err := csOperatorService.CreateCsOperator(&csOperator); err != nil {
 		global.GVA_LOG.Error("创建失败!", zap.Error(err))
 		response.FailWithMessage("创建失败", c)
@@ -58,7 +60,6 @@ func (csOperatorApi *CsOperatorApi) DeleteCsOperator(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	csOperator.DeletedBy = utils.GetUserID(c)
 	if err := csOperatorService.DeleteCsOperator(csOperator); err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
 		response.FailWithMessage("删除失败", c)
@@ -108,7 +109,6 @@ func (csOperatorApi *CsOperatorApi) UpdateCsOperator(c *gin.Context) {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	csOperator.UpdatedBy = utils.GetUserID(c)
 	if err := csOperatorService.UpdateCsOperator(csOperator); err != nil {
 		global.GVA_LOG.Error("更新失败!", zap.Error(err))
 		response.FailWithMessage("更新失败", c)
@@ -152,7 +152,9 @@ func (csOperatorApi *CsOperatorApi) FindCsOperator(c *gin.Context) {
 // @Router /csOperator/getCsOperatorList [get]
 func (csOperatorApi *CsOperatorApi) GetCsOperatorList(c *gin.Context) {
 	var pageInfo operatorReq.CsOperatorSearch
+	tenantID := utils.GetTenantID(c)
 	err := c.ShouldBindQuery(&pageInfo)
+	pageInfo.TenantID = tenantID
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -197,5 +199,37 @@ func (csOperatorApi *CsOperatorApi) SetOperatorMenus(c *gin.Context) {
 		response.FailWithMessage("设置失败", c)
 	} else {
 		response.OkWithMessage("设置成功", c)
+	}
+}
+
+func (csOperatorApi *CsOperatorApi) CreateCsOperatorAdmin(c *gin.Context) {
+	operatorStr := c.Query("operatorID")
+	operatorID, _ := strconv.Atoi(operatorStr)
+	tenantID := utils.GetTenantID(c)
+	if err := csOperatorService.CreateOperatorAdmin(tenantID, uint(operatorID)); err != nil {
+		global.GVA_LOG.Error("创建失败!", zap.Error(err))
+		response.FailWithMessage("创建失败", c)
+	} else {
+		response.OkWithMessage("创建成功", c)
+	}
+}
+
+func (csOperatorApi *CsOperatorApi) GetApisByOperatorID(c *gin.Context) {
+	id := c.Query("operatorID")
+	if apis, err := csOperatorService.GetOperatorApis(id); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Error(err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithData(apis, c)
+	}
+}
+
+func (csOperatorApi *CsOperatorApi) GetMenusByOperatorID(c *gin.Context) {
+	id := c.Query("operatorID")
+	if menus, err := csOperatorService.GetOperatorMenus(id); err != nil {
+		global.GVA_LOG.Error("获取失败!", zap.Error(err))
+		response.FailWithMessage("获取失败", c)
+	} else {
+		response.OkWithData(menus, c)
 	}
 }

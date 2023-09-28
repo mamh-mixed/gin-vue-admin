@@ -1,6 +1,7 @@
 package system
 
 import (
+	"github.com/flipped-aurora/gin-vue-admin/server/service/operator"
 	"strconv"
 	"time"
 
@@ -18,6 +19,7 @@ import (
 )
 
 var tenantServer = new(tenant.CsTenantService)
+var operatorServer = new(operator.CsOperatorService)
 
 // Login
 // @Tags     Base
@@ -31,6 +33,7 @@ func (b *BaseApi) Login(c *gin.Context) {
 	err := c.ShouldBindJSON(&l)
 	key := c.ClientIP()
 	tenantOnlyKey := c.Query("tenant")
+	operatorOnlyKey := c.Query("operator")
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
@@ -55,8 +58,9 @@ func (b *BaseApi) Login(c *gin.Context) {
 		u := &system.SysUser{Username: l.Username, Password: l.Password}
 
 		tenantID := tenantServer.GetTenantIDByOnlyKey(tenantOnlyKey)
+		operatorID := operatorServer.GetOperatorIDByOnlyKey(operatorOnlyKey)
 
-		user, err := userService.Login(u, tenantID)
+		user, err := userService.Login(u, tenantID, operatorID)
 		if err != nil {
 			global.GVA_LOG.Error("登陆失败! 用户名不存在或者密码错误!", zap.Error(err))
 			// 验证码次数+1
@@ -149,6 +153,7 @@ func (b *BaseApi) TokenNext(c *gin.Context, user system.SysUser) {
 func (b *BaseApi) Register(c *gin.Context) {
 	var r systemReq.Register
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	err := c.ShouldBindJSON(&r)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
@@ -166,7 +171,7 @@ func (b *BaseApi) Register(c *gin.Context) {
 		})
 	}
 	user := &system.SysUser{Username: r.Username, NickName: r.NickName, Password: r.Password, HeaderImg: r.HeaderImg, AuthorityId: r.AuthorityId, Authorities: authorities, Enable: r.Enable, Phone: r.Phone, Email: r.Email}
-	userReturn, err := userService.Register(*user, tenantID)
+	userReturn, err := userService.Register(*user, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("注册失败!", zap.Error(err))
 		response.FailWithDetailed(systemRes.SysUserResponse{User: userReturn}, "注册失败", c)
@@ -196,9 +201,10 @@ func (b *BaseApi) ChangePassword(c *gin.Context) {
 		return
 	}
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	uid := utils.GetUserID(c)
 	u := &system.SysUser{GVA_MODEL: global.GVA_MODEL{ID: uid}, Password: req.Password}
-	_, err = userService.ChangePassword(u, req.NewPassword, tenantID)
+	_, err = userService.ChangePassword(u, req.NewPassword, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("修改失败!", zap.Error(err))
 		response.FailWithMessage("修改失败，原密码与当前账户不符", c)
@@ -229,7 +235,8 @@ func (b *BaseApi) GetUserList(c *gin.Context) {
 		return
 	}
 	tenantID := utils.GetTenantID(c)
-	list, total, err := userService.GetUserInfoList(pageInfo, tenantID)
+	operatorID := utils.GetOperatorID(c)
+	list, total, err := userService.GetUserInfoList(pageInfo, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
@@ -265,7 +272,8 @@ func (b *BaseApi) SetUserAuthority(c *gin.Context) {
 	}
 	userID := utils.GetUserID(c)
 	tenantID := utils.GetTenantID(c)
-	err = userService.SetUserAuthority(userID, sua.AuthorityId, tenantID)
+	operatorID := utils.GetOperatorID(c)
+	err = userService.SetUserAuthority(userID, sua.AuthorityId, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("修改失败!", zap.Error(err))
 		response.FailWithMessage(err.Error(), c)
@@ -297,11 +305,12 @@ func (b *BaseApi) SetUserAuthorities(c *gin.Context) {
 	var sua systemReq.SetUserAuthorities
 	err := c.ShouldBindJSON(&sua)
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err = userService.SetUserAuthorities(sua.ID, sua.AuthorityIds, tenantID)
+	err = userService.SetUserAuthorities(sua.ID, sua.AuthorityIds, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("修改失败!", zap.Error(err))
 		response.FailWithMessage("修改失败", c)
@@ -322,6 +331,7 @@ func (b *BaseApi) SetUserAuthorities(c *gin.Context) {
 func (b *BaseApi) DeleteUser(c *gin.Context) {
 	var reqId request.GetById
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	err := c.ShouldBindJSON(&reqId)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
@@ -337,7 +347,7 @@ func (b *BaseApi) DeleteUser(c *gin.Context) {
 		response.FailWithMessage("删除失败, 自杀失败", c)
 		return
 	}
-	err = userService.DeleteUser(reqId.ID, tenantID)
+	err = userService.DeleteUser(reqId.ID, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("删除失败!", zap.Error(err))
 		response.FailWithMessage("删除失败", c)
@@ -358,6 +368,7 @@ func (b *BaseApi) DeleteUser(c *gin.Context) {
 func (b *BaseApi) SetUserInfo(c *gin.Context) {
 	var user systemReq.ChangeUserInfo
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	err := c.ShouldBindJSON(&user)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
@@ -370,7 +381,7 @@ func (b *BaseApi) SetUserInfo(c *gin.Context) {
 	}
 
 	if len(user.AuthorityIds) != 0 {
-		err = userService.SetUserAuthorities(user.ID, user.AuthorityIds, tenantID)
+		err = userService.SetUserAuthorities(user.ID, user.AuthorityIds, tenantID, operatorID)
 		if err != nil {
 			global.GVA_LOG.Error("设置失败!", zap.Error(err))
 			response.FailWithMessage("设置失败", c)
@@ -387,7 +398,7 @@ func (b *BaseApi) SetUserInfo(c *gin.Context) {
 		Email:     user.Email,
 		SideMode:  user.SideMode,
 		Enable:    user.Enable,
-	}, tenantID)
+	}, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("设置失败!", zap.Error(err))
 		response.FailWithMessage("设置失败", c)
@@ -414,6 +425,7 @@ func (b *BaseApi) SetSelfInfo(c *gin.Context) {
 	}
 	user.ID = utils.GetUserID(c)
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	err = userService.SetSelfInfo(system.SysUser{
 		GVA_MODEL: global.GVA_MODEL{
 			ID: user.ID,
@@ -424,7 +436,7 @@ func (b *BaseApi) SetSelfInfo(c *gin.Context) {
 		Email:     user.Email,
 		SideMode:  user.SideMode,
 		Enable:    user.Enable,
-	}, tenantID)
+	}, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("设置失败!", zap.Error(err))
 		response.FailWithMessage("设置失败", c)
@@ -444,7 +456,8 @@ func (b *BaseApi) SetSelfInfo(c *gin.Context) {
 func (b *BaseApi) GetUserInfo(c *gin.Context) {
 	userID := utils.GetUserID(c)
 	tenantID := utils.GetTenantID(c)
-	ReqUser, err := userService.GetUserInfo(userID, tenantID)
+	operatorID := utils.GetOperatorID(c)
+	ReqUser, err := userService.GetUserInfo(userID, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("获取失败!", zap.Error(err))
 		response.FailWithMessage("获取失败", c)
@@ -465,11 +478,12 @@ func (b *BaseApi) ResetPassword(c *gin.Context) {
 	var user system.SysUser
 	err := c.ShouldBindJSON(&user)
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err = userService.ResetPassword(user.ID, tenantID)
+	err = userService.ResetPassword(user.ID, tenantID, operatorID)
 	if err != nil {
 		global.GVA_LOG.Error("重置失败!", zap.Error(err))
 		response.FailWithMessage("重置失败"+err.Error(), c)

@@ -19,7 +19,7 @@ type SysAuthority struct {
 }
 
 type SysAuthorityTable struct {
-	TenantID      uint       `json:"tenantId" form:"tenantId" gorm:"column:tenant_id;comment:租户id;"`
+	TenantID      uint       `json:"tenantID" form:"tenantID" gorm:"column:tenant_id;comment:租户id;"`
 	CreatedAt     time.Time  // 创建时间
 	UpdatedAt     time.Time  // 更新时间
 	DeletedAt     *time.Time `sql:"index"`

@@ -173,12 +173,7 @@
             prop="username"
             width="120"
         />
-        <el-table-column
-            align="left"
-            label="密码"
-            prop="password"
-            width="120"
-        />
+
         <el-table-column
             align="left"
             label="租户昵称"
@@ -220,6 +215,9 @@
             prop="allocationProportion"
             width="120"
         />
+        <el-table-column align="left" label="登录连接" width="180">
+          <template #default="scope">{{ getLoginUrl(scope.row)  }}</template>
+        </el-table-column>
         <el-table-column
             align="left"
             label="操作"
@@ -232,6 +230,7 @@
                 class="table-button"
                 @click="opdendrawer(scope.row)"
             >分配权限</el-button>
+            <el-button type="primary" link icon="edit" class="table-button" @click="createAdmin(scope.row.ID)">创建管理员</el-button>
             <el-button
                 type="primary"
                 link
@@ -284,16 +283,7 @@
                 placeholder="请输入"
             />
           </el-form-item>
-          <el-form-item
-              label="密码:"
-              prop="password"
-          >
-            <el-input
-                v-model="formData.password"
-                :clearable="true"
-                placeholder="请输入"
-            />
-          </el-form-item>
+
           <el-form-item
               label="租户昵称:"
               prop="nickname"
@@ -407,7 +397,8 @@ import {
   deleteCsTenantByIds,
   updateCsTenant,
   findCsTenant,
-  getCsTenantList
+  getCsTenantList,
+  createCsTenantAdmin
 } from '@/api/csTenant'
 import { getUrl } from '@/utils/image'
 // 图片选择组件
@@ -425,6 +416,20 @@ const changeRow = (key, value) => {
   activeRow.value[key] = value
 }
 
+const getLoginUrl = (row) => {
+  return `${window.location.origin}/#/login?tenant=${row.onlyKey}`
+}
+
+const createAdmin = async (tenantID) =>{
+  const res = await createCsTenantAdmin(tenantID)
+  if (res.code === 0) {
+    ElMessage({
+      type: 'success',
+      message: '创建成功'
+    })
+  }
+}
+
 const drawer = ref(false)
 
 const opdendrawer = (row) => {
@@ -436,7 +441,6 @@ const opdendrawer = (row) => {
 const allocationOptions = ref([])
 const formData = ref({
   username: '',
-  password: '',
   nickname: '',
   logo: '',
   endTime: new Date(),
@@ -457,17 +461,7 @@ const rule = reactive({
       trigger: ['input', 'blur'],
     }
   ],
-  password: [{
-    required: true,
-    message: '',
-    trigger: ['input', 'blur'],
-  },
-    {
-      whitespace: true,
-      message: '不能只输入空格',
-      trigger: ['input', 'blur'],
-    }
-  ],
+
 })
 
 const searchRule = reactive({
@@ -661,7 +655,6 @@ const closeDetailShow = () => {
   detailShow.value = false
   formData.value = {
     username: '',
-    password: '',
     nickname: '',
     endTime: new Date(),
     allocation: undefined,
@@ -680,7 +673,6 @@ const closeDialog = () => {
   dialogFormVisible.value = false
   formData.value = {
     username: '',
-    password: '',
     nickname: '',
     endTime: new Date(),
     allocation: undefined,

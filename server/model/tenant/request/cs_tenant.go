@@ -16,11 +16,11 @@ type CsTenantSearch struct {
 }
 
 type CsTenantApisReq struct {
-	TenantId uint   `json:"tenantId" form:"tenantId"`
+	TenantID uint   `json:"tenantID" form:"tenantID"`
 	ApiIDs   []uint `json:"apiIds" form:"apiIds"`
 }
 
 type CsTenantMenusReq struct {
-	TenantId uint   `json:"tenantId" form:"tenantId" `
+	TenantID uint   `json:"tenantID" form:"tenantID" `
 	MenuIDs  []uint `json:"menuIds" form:"menuIds"`
 }

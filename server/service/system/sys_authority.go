@@ -24,9 +24,9 @@ type AuthorityService struct{}
 
 var AuthorityServiceApp = new(AuthorityService)
 
-func (authorityService *AuthorityService) CreateAuthority(auth system.SysAuthority, tenantID uint) (authority system.SysAuthority, err error) {
+func (authorityService *AuthorityService) CreateAuthority(auth system.SysAuthority, tenantID uint, operatorID uint) (authority system.SysAuthority, err error) {
 	var authorityBox system.SysAuthority
-	tableName := utils.GetAuthsTable(tenantID)
+	tableName := utils.GetAuthsTable(tenantID, operatorID)
 	if !errors.Is(global.GVA_DB.Table(tableName).Where("authority_id = ?", auth.AuthorityId).First(&authorityBox).Error, gorm.ErrRecordNotFound) {
 		return auth, ErrRoleExistence
 	}
@@ -40,7 +40,7 @@ func (authorityService *AuthorityService) CreateAuthority(auth system.SysAuthori
 //@param: copyInfo response.SysAuthorityCopyResponse
 //@return: authority system.SysAuthority, err error
 
-func (authorityService *AuthorityService) CopyAuthority(copyInfo response.SysAuthorityCopyResponse, tenantID uint) (authority system.SysAuthority, err error) {
+func (authorityService *AuthorityService) CopyAuthority(copyInfo response.SysAuthorityCopyResponse, tenantID uint, operatorID uint) (authority system.SysAuthority, err error) {
 	// TODO: 找表
 
 	var authorityBox system.SysAuthority
@@ -48,7 +48,7 @@ func (authorityService *AuthorityService) CopyAuthority(copyInfo response.SysAut
 		return authority, ErrRoleExistence
 	}
 	copyInfo.Authority.Children = []system.SysAuthority{}
-	menus, err := MenuServiceApp.GetMenuAuthority(&request.GetAuthorityId{AuthorityId: copyInfo.OldAuthorityId}, tenantID)
+	menus, err := MenuServiceApp.GetMenuAuthority(&request.GetAuthorityId{AuthorityId: copyInfo.OldAuthorityId}, tenantID, operatorID)
 	if err != nil {
 		return
 	}
@@ -80,10 +80,10 @@ func (authorityService *AuthorityService) CopyAuthority(copyInfo response.SysAut
 			return
 		}
 	}
-	paths := CasbinServiceApp.GetPolicyPathByAuthorityId(copyInfo.OldAuthorityId, tenantID)
-	err = CasbinServiceApp.UpdateCasbin(copyInfo.Authority.AuthorityId, paths, tenantID)
+	paths := CasbinServiceApp.GetPolicyPathByAuthorityId(copyInfo.OldAuthorityId, tenantID, operatorID)
+	err = CasbinServiceApp.UpdateCasbin(copyInfo.Authority.AuthorityId, paths, tenantID, operatorID)
 	if err != nil {
-		_ = authorityService.DeleteAuthority(&copyInfo.Authority, tenantID)
+		_ = authorityService.DeleteAuthority(&copyInfo.Authority, tenantID, operatorID)
 	}
 	return copyInfo.Authority, err
 }
@@ -94,8 +94,8 @@ func (authorityService *AuthorityService) CopyAuthority(copyInfo response.SysAut
 //@param: auth model.SysAuthority
 //@return: authority system.SysAuthority, err error
 
-func (authorityService *AuthorityService) UpdateAuthority(auth system.SysAuthority, tenantID uint) (authority system.SysAuthority, err error) {
-	tableName := utils.GetAuthsTable(tenantID)
+func (authorityService *AuthorityService) UpdateAuthority(auth system.SysAuthority, tenantID uint, operatorID uint) (authority system.SysAuthority, err error) {
+	tableName := utils.GetAuthsTable(tenantID, operatorID)
 	err = global.GVA_DB.Table(tableName).Where("authority_id = ?", auth.AuthorityId).First(&system.SysAuthority{}).Updates(&auth).Error
 	return auth, err
 }
@@ -106,10 +106,10 @@ func (authorityService *AuthorityService) UpdateAuthority(auth system.SysAuthori
 //@param: auth *model.SysAuthority
 //@return: err error
 
-func (authorityService *AuthorityService) DeleteAuthority(auth *system.SysAuthority, tenantId uint) (err error) {
+func (authorityService *AuthorityService) DeleteAuthority(auth *system.SysAuthority, tenantID uint, operatorID uint) (err error) {
 	// TODO: 找表
-	tableName := utils.GetAuthsTable(tenantId)
-	userTable := utils.GetUserTableName(tenantId)
+	tableName := utils.GetAuthsTable(tenantID, operatorID)
+	userTable := utils.GetUserTableName(tenantID, operatorID)
 	if errors.Is(global.GVA_DB.Table(tableName).Preload("Users", func(db *gorm.DB) *gorm.DB {
 		return db.Table(userTable)
 	}).First(&auth).Error, gorm.ErrRecordNotFound) {
@@ -134,14 +134,14 @@ func (authorityService *AuthorityService) DeleteAuthority(auth *system.SysAuthor
 		for i := range auth.SysBaseMenus {
 			ids = append(ids, auth.SysBaseMenus[i].ID)
 		}
-		authMenuTable := utils.GetAuthMenuTableName(tenantId)
+		authMenuTable := utils.GetAuthMenuTableName(tenantID, operatorID)
 		err = global.GVA_DB.Table(authMenuTable).Where("sys_base_menu_id in (?)", ids).Delete(&[]system.SysAuthorityMenu{}).Error
 		if err != nil {
 			return
 		}
 		// err = db.Association("SysBaseMenus").Delete(&auth)
 	}
-	userAuthTable := utils.GetUserAuthorityTableName(tenantId)
+	userAuthTable := utils.GetUserAuthorityTableName(tenantID, operatorID)
 	err = global.GVA_DB.Table(userAuthTable).Delete(&[]system.SysUserAuthority{}, "sys_authority_authority_id = ?", auth.AuthorityId).Error
 	if err != nil {
 		return
@@ -152,7 +152,7 @@ func (authorityService *AuthorityService) DeleteAuthority(auth *system.SysAuthor
 	//	return
 	//}
 	authorityId := strconv.Itoa(int(auth.AuthorityId))
-	CasbinServiceApp.ClearCasbin(tenantId, 0, authorityId)
+	CasbinServiceApp.ClearCasbin(tenantID, operatorID, 0, authorityId)
 	return err
 }
 
@@ -162,8 +162,8 @@ func (authorityService *AuthorityService) DeleteAuthority(auth *system.SysAuthor
 //@param: info request.PageInfo
 //@return: list interface{}, total int64, err error
 
-func (authorityService *AuthorityService) GetAuthorityInfoList(info request.PageInfo, tenantID uint) (list interface{}, total int64, err error) {
-	tableName := utils.GetAuthsTable(tenantID)
+func (authorityService *AuthorityService) GetAuthorityInfoList(info request.PageInfo, tenantID uint, operatorID uint) (list interface{}, total int64, err error) {
+	tableName := utils.GetAuthsTable(tenantID, operatorID)
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
 	db := global.GVA_DB.Table(tableName)
@@ -195,9 +195,9 @@ func (authorityService *AuthorityService) GetAuthorityInfo(auth system.SysAuthor
 //@param: auth *model.SysAuthority
 //@return: error
 
-func (authorityService *AuthorityService) SetMenuAuthority(auth *system.SysAuthority, tenantID uint) error {
-	tableName := utils.GetAuthMenuTableName(tenantID)
-	global.GVA_DB.Table(tableName).Where("authority_id = ?", auth.AuthorityId).Delete(&[]system.SysAuthorityMenu{})
+func (authorityService *AuthorityService) SetMenuAuthority(auth *system.SysAuthority, tenantID uint, operationID uint) error {
+	tableName := utils.GetAuthMenuTableName(tenantID, operationID)
+	global.GVA_DB.Table(tableName).Where("sys_authority_authority_id = ?", auth.AuthorityId).Delete(&[]system.SysAuthorityMenu{})
 	var authMenus []system.SysAuthorityMenu
 	for _, v := range auth.SysBaseMenus {
 		authMenus = append(authMenus, system.SysAuthorityMenu{AuthorityId: strconv.Itoa(int(auth.AuthorityId)), MenuId: strconv.Itoa(int(v.ID))})

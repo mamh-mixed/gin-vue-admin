@@ -48,7 +48,6 @@
             <template #default="scope">{{ formatDate(scope.row.CreatedAt) }}</template>
         </el-table-column>
         <el-table-column align="left" label="租户名" prop="username" width="120" />
-        <el-table-column align="left" label="密码" prop="password" width="120" />
         <el-table-column align="left" label="运营商昵称" prop="nickname" width="120" />
          <el-table-column align="left" label="到期字段" width="180">
             <template #default="scope">{{ formatDate(scope.row.endTime) }}</template>
@@ -59,13 +58,24 @@
             </template>
         </el-table-column>
         <el-table-column align="left" label="分润比例" prop="allocationProportion" width="120" />
+          <el-table-column align="left" label="登录连接" width="180">
+            <template #default="scope">{{ getLoginUrl(scope.row)  }}</template>
+          </el-table-column>
         <el-table-column align="left" label="操作">
             <template #default="scope">
             <el-button type="primary" link class="table-button" @click="getDetails(scope.row)">
                 <el-icon style="margin-right: 5px"><InfoFilled /></el-icon>
                 查看详情
             </el-button>
-            <el-button type="primary" link icon="edit" class="table-button" @click="updateCsOperatorFunc(scope.row)">变更</el-button>
+              <el-button
+                  type="primary"
+                  link
+                  icon="edit"
+                  class="table-button"
+                  @click="opdendrawer(scope.row)"
+              >分配权限</el-button>
+              <el-button type="primary" link icon="edit" class="table-button" @click="createAdmin(scope.row.ID)">创建管理员</el-button>
+              <el-button type="primary" link icon="edit" class="table-button" @click="updateCsOperatorFunc(scope.row)">变更</el-button>
             <el-button type="primary" link icon="delete" @click="deleteRow(scope.row)">删除</el-button>
             </template>
         </el-table-column>
@@ -87,9 +97,6 @@
           <el-form :model="formData" label-position="right" ref="elFormRef" :rules="rule" label-width="80px">
             <el-form-item label="租户名:"  prop="username" >
               <el-input v-model="formData.username" :clearable="true"  placeholder="请输入" />
-            </el-form-item>
-            <el-form-item label="密码:"  prop="password" >
-              <el-input v-model="formData.password" :clearable="true"  placeholder="请输入" />
             </el-form-item>
             <el-form-item label="运营商昵称:"  prop="nickname" >
               <el-input v-model="formData.nickname" :clearable="true"  placeholder="请输入" />
@@ -121,9 +128,7 @@
                 <el-descriptions-item label="租户名">
                     {{ formData.username }}
                 </el-descriptions-item>
-                <el-descriptions-item label="密码">
-                    {{ formData.password }}
-                </el-descriptions-item>
+
                 <el-descriptions-item label="运营商昵称">
                     {{ formData.nickname }}
                 </el-descriptions-item>
@@ -139,6 +144,34 @@
         </el-descriptions>
       </el-scrollbar>
     </el-dialog>
+
+    <el-drawer
+        v-if="drawer"
+        v-model="drawer"
+        custom-class="auth-drawer"
+        :with-header="false"
+        size="40%"
+        title="角色配置"
+    >
+      <el-tabs
+          type="border-card"
+      >
+        <el-tab-pane label="角色菜单">
+          <Menus
+              ref="menus"
+              :row="activeRow"
+              @changeRow="changeRow"
+          />
+        </el-tab-pane>
+        <el-tab-pane label="角色api">
+          <Apis
+              ref="apis"
+              :row="activeRow"
+              @changeRow="changeRow"
+          />
+        </el-tab-pane>
+      </el-tabs>
+    </el-drawer>
   </div>
 </template>
 
@@ -155,19 +188,48 @@ import {
   deleteCsOperatorByIds,
   updateCsOperator,
   findCsOperator,
-  getCsOperatorList
+  getCsOperatorList,
+  createCsOperatorAdmin
 } from '@/api/csOperator'
 
 // 全量引入格式化工具 请按需保留
 import { getDictFunc, formatDate, formatBoolean, filterDict, ReturnArrImg, onDownloadFile } from '@/utils/format'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { ref, reactive } from 'vue'
+import Apis from "@/view/csOperator/components/apis.vue";
+import Menus from "@/view/csOperator/components/menus.vue";
+const createAdmin = async (operatorID) =>{
+  const res = await createCsOperatorAdmin(operatorID)
+  if (res.code === 0) {
+    ElMessage({
+      type: 'success',
+      message: '创建成功'
+    })
+  }
+}
+
+const getLoginUrl = (row) => {
+  return `${window.location.origin}/#/login?operator=${row.onlyKey}&tenant=${row.tenantOnlyKey}`
+}
+
+
+const activeRow = ref({})
+const changeRow = (key, value) => {
+  activeRow.value[key] = value
+}
+
+
+const drawer = ref(false)
+
+const opdendrawer = (row) => {
+  drawer.value = true
+  activeRow.value = row
+}
 
 // 自动化生成的字典（可能为空）以及字段
 const allocationOptions = ref([])
 const formData = ref({
         username: '',
-        password: '',
         nickname: '',
         endTime: new Date(),
         allocation: undefined,
@@ -365,7 +427,6 @@ const closeDetailShow = () => {
   detailShow.value = false
   formData.value = {
           username: '',
-          password: '',
           nickname: '',
           endTime: new Date(),
           allocation: undefined,
@@ -385,7 +446,6 @@ const closeDialog = () => {
     dialogFormVisible.value = false
     formData.value = {
         username: '',
-        password: '',
         nickname: '',
         endTime: new Date(),
         allocation: undefined,

@@ -21,16 +21,17 @@ import (
 
 type UserService struct{}
 
-func (userService *UserService) Register(u system.SysUser, tenantID uint) (userInter system.SysUser, err error) {
+func (userService *UserService) Register(u system.SysUser, tenantID uint, operatorID uint) (userInter system.SysUser, err error) {
 	var user system.SysUser
-	userTable := utils.GetUserTableName(tenantID)
+	userTable := utils.GetUserTableName(tenantID, operatorID)
 	var auths []system.SysAuthority
 	for _, v := range u.Authorities {
 		auths = append(auths, v)
 	}
-	userAuthTable := utils.GetUserAuthorityTableName(tenantID)
-	userTableName := utils.GetUserTableName(tenantID)
+	userAuthTable := utils.GetUserAuthorityTableName(tenantID, operatorID)
+	userTableName := utils.GetUserTableName(tenantID, operatorID)
 	u.TenantID = tenantID
+	u.OperatorID = operatorID
 	if !errors.Is(global.GVA_DB.Table(userTableName).Where("username = ?", u.Username).First(&user).Error, gorm.ErrRecordNotFound) { // 判断用户名是否注册
 		return userInter, errors.New("用户名已注册")
 	}
@@ -64,14 +65,14 @@ func (userService *UserService) Register(u system.SysUser, tenantID uint) (userI
 //@param: u *model.SysUser
 //@return: err error, userInter *model.SysUser
 
-func (userService *UserService) Login(u *system.SysUser, tenantID uint) (userInter *system.SysUser, err error) {
+func (userService *UserService) Login(u *system.SysUser, tenantID uint, operatorID uint) (userInter *system.SysUser, err error) {
 	if nil == global.GVA_DB {
 		return nil, fmt.Errorf("db not init")
 	}
 
-	tableName := utils.GetUserTableName(tenantID)
-	AuthTableName := utils.GetAuthsTable(tenantID)
-	userAuthTableName := utils.GetUserAuthorityTableName(tenantID)
+	tableName := utils.GetUserTableName(tenantID, operatorID)
+	AuthTableName := utils.GetAuthsTable(tenantID, operatorID)
+	userAuthTableName := utils.GetUserAuthorityTableName(tenantID, operatorID)
 	var userAuthorities []system.SysUserAuthority
 	err = global.GVA_DB.Table(userAuthTableName).Where("sys_user_id = ?", u.ID).Find(&userAuthorities).Error
 	if err != nil {
@@ -95,7 +96,7 @@ func (userService *UserService) Login(u *system.SysUser, tenantID uint) (userInt
 		if ok := utils.BcryptCheck(u.Password, user.Password); !ok {
 			return nil, errors.New("密码错误")
 		}
-		MenuServiceApp.UserAuthorityDefaultRouter(&user, tenantID)
+		MenuServiceApp.UserAuthorityDefaultRouter(&user, tenantID, operatorID)
 	}
 	return &user, err
 }
@@ -106,9 +107,9 @@ func (userService *UserService) Login(u *system.SysUser, tenantID uint) (userInt
 //@param: u *model.SysUser, newPassword string
 //@return: userInter *model.SysUser,err error
 
-func (userService *UserService) ChangePassword(u *system.SysUser, newPassword string, tenantID uint) (userInter *system.SysUser, err error) {
+func (userService *UserService) ChangePassword(u *system.SysUser, newPassword string, tenantID uint, operatorID uint) (userInter *system.SysUser, err error) {
 	var user system.SysUser
-	userTableName := utils.GetUserTableName(tenantID)
+	userTableName := utils.GetUserTableName(tenantID, operatorID)
 	if err = global.GVA_DB.Table(userTableName).Where("id = ?", u.ID).First(&user).Error; err != nil {
 		return nil, err
 	}
@@ -127,11 +128,11 @@ func (userService *UserService) ChangePassword(u *system.SysUser, newPassword st
 //@param: info request.PageInfo
 //@return: err error, list interface{}, total int64
 
-func (userService *UserService) GetUserInfoList(info request.PageInfo, tenantID uint) (list interface{}, total int64, err error) {
+func (userService *UserService) GetUserInfoList(info request.PageInfo, tenantID uint, operatorID uint) (list interface{}, total int64, err error) {
 	limit := info.PageSize
 	offset := info.PageSize * (info.Page - 1)
-	tableName := utils.GetUserTableName(tenantID)
-	authTableName := utils.GetAuthsTable(tenantID)
+	tableName := utils.GetUserTableName(tenantID, operatorID)
+	authTableName := utils.GetAuthsTable(tenantID, operatorID)
 	db := global.GVA_DB.Table(tableName)
 	var userList []system.SysUser
 	err = db.Count(&total).Error
@@ -144,7 +145,7 @@ func (userService *UserService) GetUserInfoList(info request.PageInfo, tenantID 
 		}).Find(&userList).Error
 
 	for i := range userList {
-		userAuthTableName := utils.GetUserAuthorityTableName(tenantID)
+		userAuthTableName := utils.GetUserAuthorityTableName(tenantID, operatorID)
 		var userAuthorities []system.SysUserAuthority
 		err = global.GVA_DB.Table(userAuthTableName).Where("sys_user_id = ?", userList[i].ID).Find(&userAuthorities).Error
 		if err != nil {
@@ -167,13 +168,13 @@ func (userService *UserService) GetUserInfoList(info request.PageInfo, tenantID 
 //@param: uuid uuid.UUID, authorityId string
 //@return: err error
 
-func (userService *UserService) SetUserAuthority(id uint, authorityId uint, tenantID uint) (err error) {
-	userAuthTable := utils.GetUserAuthorityTableName(tenantID)
+func (userService *UserService) SetUserAuthority(id uint, authorityId uint, tenantID uint, operatorID uint) (err error) {
+	userAuthTable := utils.GetUserAuthorityTableName(tenantID, operatorID)
 	assignErr := global.GVA_DB.Table(userAuthTable).Where("sys_user_id = ? AND sys_authority_authority_id = ?", id, authorityId).First(&system.SysUserAuthority{}).Error
 	if errors.Is(assignErr, gorm.ErrRecordNotFound) {
 		return errors.New("该用户无此角色")
 	}
-	userTable := utils.GetUserTableName(tenantID)
+	userTable := utils.GetUserTableName(tenantID, operatorID)
 	err = global.GVA_DB.Table(userTable).Where("id = ?", id).First(&system.SysUser{}).Update("authority_id", authorityId).Error
 	return err
 }
@@ -184,9 +185,9 @@ func (userService *UserService) SetUserAuthority(id uint, authorityId uint, tena
 //@param: id uint, authorityIds []string
 //@return: err error
 
-func (userService *UserService) SetUserAuthorities(id uint, authorityIds []uint, tenantID uint) (err error) {
-	userAuthTable := utils.GetUserAuthorityTableName(tenantID)
-	userTable := utils.GetUserTableName(tenantID)
+func (userService *UserService) SetUserAuthorities(id uint, authorityIds []uint, tenantID uint, operatorID uint) (err error) {
+	userAuthTable := utils.GetUserAuthorityTableName(tenantID, operatorID)
+	userTable := utils.GetUserTableName(tenantID, operatorID)
 	return global.GVA_DB.Transaction(func(tx *gorm.DB) error {
 		TxErr := tx.Table(userAuthTable).Delete(&[]system.SysUserAuthority{}, "sys_user_id = ?", id).Error
 		if TxErr != nil {
@@ -217,10 +218,10 @@ func (userService *UserService) SetUserAuthorities(id uint, authorityIds []uint,
 //@param: id float64
 //@return: err error
 
-func (userService *UserService) DeleteUser(id int, tenantID uint) (err error) {
+func (userService *UserService) DeleteUser(id int, tenantID uint, operatorID uint) (err error) {
 	var user system.SysUser
-	userAuthTable := utils.GetUserAuthorityTableName(tenantID)
-	userTableName := utils.GetUserTableName(tenantID)
+	userAuthTable := utils.GetUserAuthorityTableName(tenantID, operatorID)
+	userTableName := utils.GetUserTableName(tenantID, operatorID)
 	err = global.GVA_DB.Table(userTableName).Where("id = ?", id).Delete(&user).Error
 	if err != nil {
 		return err
@@ -235,8 +236,8 @@ func (userService *UserService) DeleteUser(id int, tenantID uint) (err error) {
 //@param: reqUser model.SysUser
 //@return: err error, user model.SysUser
 
-func (userService *UserService) SetUserInfo(req system.SysUser, tenantID uint) error {
-	userTableName := utils.GetUserTableName(tenantID)
+func (userService *UserService) SetUserInfo(req system.SysUser, tenantID uint, operatorID uint) error {
+	userTableName := utils.GetUserTableName(tenantID, operatorID)
 	return global.GVA_DB.Table(userTableName).
 		Select("updated_at", "nick_name", "header_img", "phone", "email", "sideMode", "enable").
 		Where("id=?", req.ID).
@@ -257,8 +258,8 @@ func (userService *UserService) SetUserInfo(req system.SysUser, tenantID uint) e
 //@param: reqUser model.SysUser
 //@return: err error, user model.SysUser
 
-func (userService *UserService) SetSelfInfo(req system.SysUser, tenantID uint) error {
-	userTableName := utils.GetUserTableName(tenantID)
+func (userService *UserService) SetSelfInfo(req system.SysUser, tenantID uint, operatorID uint) error {
+	userTableName := utils.GetUserTableName(tenantID, operatorID)
 	return global.GVA_DB.Table(userTableName).
 		Where("id=?", req.ID).
 		Updates(req).Error
@@ -271,11 +272,11 @@ func (userService *UserService) SetSelfInfo(req system.SysUser, tenantID uint) e
 //@param: uuid uuid.UUID
 //@return: err error, user system.SysUser
 
-func (userService *UserService) GetUserInfo(userID, tenantID uint) (user system.SysUser, err error) {
+func (userService *UserService) GetUserInfo(userID, tenantID uint, operatorID uint) (user system.SysUser, err error) {
 	var reqUser system.SysUser
-	tableName := utils.GetUserTableName(tenantID)
-	authTableName := utils.GetAuthsTable(tenantID)
-	userAuthTableName := utils.GetUserAuthorityTableName(tenantID)
+	tableName := utils.GetUserTableName(tenantID, operatorID)
+	authTableName := utils.GetAuthsTable(tenantID, operatorID)
+	userAuthTableName := utils.GetUserAuthorityTableName(tenantID, operatorID)
 
 	err = global.GVA_DB.Table(tableName).
 		Preload("Authority", func(db *gorm.DB) *gorm.DB {
@@ -297,7 +298,7 @@ func (userService *UserService) GetUserInfo(userID, tenantID uint) (user system.
 	if err != nil {
 		return reqUser, err
 	}
-	MenuServiceApp.UserAuthorityDefaultRouter(&reqUser, tenantID)
+	MenuServiceApp.UserAuthorityDefaultRouter(&reqUser, tenantID, operatorID)
 	return reqUser, err
 }
 
@@ -307,9 +308,9 @@ func (userService *UserService) GetUserInfo(userID, tenantID uint) (user system.
 //@param: id int
 //@return: err error, user *model.SysUser
 
-func (userService *UserService) FindUserById(id int, tenantID uint) (user *system.SysUser, err error) {
+func (userService *UserService) FindUserById(id int, tenantID uint, operatorID uint) (user *system.SysUser, err error) {
 	var u system.SysUser
-	tableName := utils.GetUserTableName(tenantID)
+	tableName := utils.GetUserTableName(tenantID, operatorID)
 	err = global.GVA_DB.Table(tableName).Where("`id` = ?", id).First(&u).Error
 	return &u, err
 }
@@ -320,9 +321,9 @@ func (userService *UserService) FindUserById(id int, tenantID uint) (user *syste
 //@param: uuid string
 //@return: err error, user *model.SysUser
 
-func (userService *UserService) FindUserByUuid(uuid string, tenantID uint) (user *system.SysUser, err error) {
+func (userService *UserService) FindUserByUuid(uuid string, tenantID uint, operatorID uint) (user *system.SysUser, err error) {
 	var u system.SysUser
-	tableName := utils.GetUserTableName(tenantID)
+	tableName := utils.GetUserTableName(tenantID, operatorID)
 	if err = global.GVA_DB.Table(tableName).Where("`uuid` = ?", uuid).First(&u).Error; err != nil {
 		return &u, errors.New("用户不存在")
 	}
@@ -335,8 +336,8 @@ func (userService *UserService) FindUserByUuid(uuid string, tenantID uint) (user
 //@param: ID uint
 //@return: err error
 
-func (userService *UserService) ResetPassword(ID uint, tenantID uint) (err error) {
-	tableName := utils.GetUserTableName(tenantID)
+func (userService *UserService) ResetPassword(ID uint, tenantID uint, operatorID uint) (err error) {
+	tableName := utils.GetUserTableName(tenantID, operatorID)
 	err = global.GVA_DB.Table(tableName).Where("id = ?", ID).Update("password", utils.BcryptHash("123456")).Error
 	return err
 }

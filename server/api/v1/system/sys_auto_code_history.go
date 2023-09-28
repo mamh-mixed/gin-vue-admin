@@ -74,11 +74,12 @@ func (a *AutoCodeHistoryApi) RollBack(c *gin.Context) {
 	var info systemReq.RollBack
 	err := c.ShouldBindJSON(&info)
 	tenantID := utils.GetTenantID(c)
+	operatorID := utils.GetOperatorID(c)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return
 	}
-	err = autoCodeHistoryService.RollBack(&info, tenantID)
+	err = autoCodeHistoryService.RollBack(&info, tenantID, operatorID)
 	if err != nil {
 		response.FailWithMessage(err.Error(), c)
 		return

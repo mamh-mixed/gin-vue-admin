@@ -2,7 +2,7 @@ package tenant
 
 type CsTenantApis struct {
 	ID       uint `gorm:"primarykey"` // 主键ID
-	TenantId uint `json:"tenantId" form:"tenantId" gorm:"column:tenant_id;comment:租户id;"`
+	TenantID uint `json:"tenantID" form:"tenantID" gorm:"column:tenant_id;comment:租户id;"`
 	ApiId    uint `json:"apiId" form:"apiId" gorm:"column:api_id;comment:api id;"`
 }
 

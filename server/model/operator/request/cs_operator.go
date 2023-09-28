@@ -14,11 +14,11 @@ type CsOperatorSearch struct {
 }
 
 type CsOperatorApisReq struct {
-	OperatorId uint   `json:"operatorId" form:"operatorId"`
+	OperatorID uint   `json:"operatorID" form:"operatorID"`
 	ApiIDs     []uint `json:"apiIds" form:"apiIds"`
 }
 
 type CsOperatorMenusReq struct {
-	OperatorId uint   `json:"operatorId" form:"operatorId" `
+	OperatorID uint   `json:"operatorID" form:"operatorID" `
 	MenuIDs    []uint `json:"menuIds" form:"menuIds"`
 }
